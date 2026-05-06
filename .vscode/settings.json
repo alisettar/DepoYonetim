@@ -1,0 +1,41 @@
+{
+  "sqltools.connections": [
+    {
+      "server": "http://172.16.40.25",
+      "port": 8124,
+      "database": "default",
+      "useJWT": false,
+      "requestTimeout": 30000,
+      "enableTls": false,
+      "previewLimit": 50,
+      "password": "test",
+      "username": "default",
+      "driver": "ClickHouse",
+      "name": "gecko-25"
+    },
+    {
+      "server": "http://172.16.40.166",
+      "port": 8124,
+      "database": "default",
+      "useJWT": false,
+      "requestTimeout": 30000,
+      "enableTls": false,
+      "previewLimit": 50,
+      "password": "test",
+      "username": "default",
+      "driver": "ClickHouse",
+      "name": "gecko-166"
+    },
+    {
+      "ssh": "Disabled",
+      "previewLimit": 50,
+      "server": "localhost",
+      "port": 5432,
+      "driver": "PostgreSQL",
+      "name": "wms",
+      "database": "wms_prototype",
+      "username": "postgres",
+      "password": "postgres"
+    }
+  ]
+}

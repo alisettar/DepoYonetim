@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -v \"^$\")",
+      "Bash(Remove-Item *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Alisettar\\\\source\\\\repos\\\\depo-yonetim\\\\src\\\\backend\" -Recurse -Directory)",
+      "Bash(Select-Object FullName)",
+      "Bash(Sort-Object FullName)",
+      "Bash(git commit -m ' *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Alisettar\\\\source\\\\repos\\\\depo-yonetim\\\\src\\\\backend\" -Directory)",
+      "Bash(Select-Object Name)",
+      "Bash(git add *)"
+    ]
+  }
+}

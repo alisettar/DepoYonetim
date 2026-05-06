@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using WMS.Domain.Catalog;
 using WMS.Domain.Identity;
+using WMS.Domain.Inventory;
 using WMS.Domain.Warehousing;
 using WMS.Infrastructure.Persistence.Configurations;
 using WMS.Infrastructure.Services;
@@ -9,7 +11,6 @@ namespace WMS.Infrastructure.Persistence;
 
 public class AppDbContext : DbContext
 {
-    // Runtime constructor — DI ile çalışır, tenant connection'ı çözer
     public AppDbContext(ITenantContext tenantContext, ICachedTenantConnectionFactory connectionFactory)
         : base(BuildOptions(
             connectionFactory.GetConnectionString(tenantContext.TenantId)
@@ -17,7 +18,6 @@ public class AppDbContext : DbContext
     {
     }
 
-    // Dev init / tooling constructor
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
     private static DbContextOptions<AppDbContext> BuildOptions(string connectionString)
@@ -28,6 +28,14 @@ public class AppDbContext : DbContext
     public DbSet<Warehouse> Warehouses => Set<Warehouse>();
     public DbSet<WarehouseLocation> WarehouseLocations => Set<WarehouseLocation>();
     public DbSet<MachineWarehouse> MachineWarehouses => Set<MachineWarehouse>();
+    public DbSet<Unit> Units => Set<Unit>();
+    public DbSet<Category> Categories => Set<Category>();
+    public DbSet<Product> Products => Set<Product>();
+    public DbSet<ProductUnit> ProductUnits => Set<ProductUnit>();
+    public DbSet<Lot> Lots => Set<Lot>();
+    public DbSet<StockMovement> StockMovements => Set<StockMovement>();
+    public DbSet<StockBalance> StockBalances => Set<StockBalance>();
+    public DbSet<FifoLayer> FifoLayers => Set<FifoLayer>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -53,6 +61,14 @@ public class AppDbContext : DbContext
 
         modelBuilder.ApplyConfiguration(new WarehouseConfiguration());
         modelBuilder.ApplyConfiguration(new WarehouseLocationConfiguration());
+        modelBuilder.ApplyConfiguration(new UnitConfiguration());
+        modelBuilder.ApplyConfiguration(new CategoryConfiguration());
+        modelBuilder.ApplyConfiguration(new ProductConfiguration());
+        modelBuilder.ApplyConfiguration(new ProductUnitConfiguration());
+        modelBuilder.ApplyConfiguration(new LotConfiguration());
+        modelBuilder.ApplyConfiguration(new StockMovementConfiguration());
+        modelBuilder.ApplyConfiguration(new StockBalanceConfiguration());
+        modelBuilder.ApplyConfiguration(new FifoLayerConfiguration());
 
         base.OnModelCreating(modelBuilder);
     }

@@ -8,8 +8,26 @@
         <li>
           <router-link to="/">Dashboard</router-link>
         </li>
+        <li class="nav-section">Depo</li>
         <li>
           <router-link to="/warehouses">Depolar</router-link>
+        </li>
+        <li class="nav-section">Katalog</li>
+        <li>
+          <router-link to="/products">Ürünler</router-link>
+        </li>
+        <li>
+          <router-link to="/categories">Kategoriler</router-link>
+        </li>
+        <li>
+          <router-link to="/units">Birimler</router-link>
+        </li>
+        <li class="nav-section">Envanter</li>
+        <li>
+          <router-link to="/inventory/movements">Hareketler</router-link>
+        </li>
+        <li>
+          <router-link to="/inventory/goods-receipt">Mal Kabul</router-link>
         </li>
       </ul>
     </nav>
@@ -161,7 +179,17 @@ tr:hover {
   font-size: 0.875rem;
 }
 
+.nav-section {
+  padding: 0.5rem 1rem 0.25rem;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #555;
+  font-weight: 600;
+}
+
 .form-group input,
+.form-group select,
 .form-group textarea {
   width: 100%;
   padding: 0.5rem 0.75rem;
