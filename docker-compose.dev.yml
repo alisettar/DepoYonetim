@@ -1,0 +1,57 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: wms-postgres
+    environment:
+      POSTGRES_DB: wms_prototype
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  api:
+    build:
+      context: src/backend
+      dockerfile: Dockerfile
+    container_name: wms-api
+    environment:
+      - ASPNETCORE_URLS=http://+:5000
+      - ConnectionStrings__Default=Host=postgres;Port=5432;Database=wms_prototype;Username=postgres;Password=postgres;
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "5000:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./src/backend:/app
+    stdin_open: true
+    tty: true
+
+  frontend:
+    build:
+      context: src/frontend
+      dockerfile: Dockerfile
+    container_name: wms-frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src/frontend:/app
+      - frontend-node-modules:/app/node_modules
+    depends_on:
+      - api
+    environment:
+      - VITE_API_URL=http://api:5000
+    stdin_open: true
+    tty: true
+
+volumes:
+  postgres-data:
+  frontend-node-modules:
