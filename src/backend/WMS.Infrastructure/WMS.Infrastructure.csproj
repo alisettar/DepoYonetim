@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Npgsql" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WMS.Application\WMS.Application.csproj" />
+    <ProjectReference Include="..\WMS.Shared\WMS.Shared.csproj" />
+    <ProjectReference Include="..\WMS.Infrastructure.Catalog\WMS.Infrastructure.Catalog.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,64 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+*.userprefs
+*.dbmdl
+*.jfm
+[Dd]ebug/
+[Rr]elease/
+[Xx]64/
+[Xx]86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+[Bb]uild/
+[Bb]uilds/
+artifacts/
+PublishProfiles/
+*.pubxml
+*.publishproj
+launchSettings.json
+
+# Frontend / Node
+node_modules/
+dist/
+dist-ssr/
+.vite/
+.cache/
+*.local
+.eslintcache
+
+# Logs
+*.log
+logs/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+appsettings.Development.json
+appsettings.Local.json
+appsettings.*.local.json
+**/secrets.json
+
+# IDE
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Test results
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+
+# Migration / tool artifacts
+migration-output/
+
+# Temp
+tmp/
+temp/
