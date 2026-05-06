@@ -19,16 +19,30 @@
               <option v-for="p in products" :key="p.id" :value="p.id">{{ p.code }} — {{ p.name }}</option>
             </select>
           </div>
-          <div class="form-group" v-if="productLotRequired(item.productId)">
-            <label>Lot Numarası *</label>
+          <div class="form-group">
+            <label>Lot Numarası</label>
             <input v-model="item.lotNumber" placeholder="L-2024-001" maxlength="50" />
           </div>
-          <div class="form-group" v-if="item.lotNumber">
+          <div class="form-group">
             <label>Üretim Tarihi</label>
             <input type="date" v-model="item.productionDate" />
           </div>
+          <div class="form-group">
+            <label>Son Kullanma Tarihi</label>
+            <input type="date" v-model="item.expiryDate" />
+          </div>
         </div>
         <div class="form-row">
+          <div class="form-group">
+            <label>Reçete</label>
+            <select v-model="item.recipeId">
+              <option value="">Seçiniz</option>
+              <option v-for="r in recipes" :key="r.id" :value="r.id">
+                {{ r.name }} ({{ productLabel(r.productId) }})
+              </option>
+            </select>
+          </div>
+        </div>
           <div class="form-group">
             <label>Miktar *</label>
             <input type="number" v-model.number="item.quantity" min="0.001" step="0.001" required />
@@ -74,12 +88,13 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { getProducts, getUnits, getWarehouses, createGoodsReceipt } from '../../api/client'
-import type { Product, Unit, Warehouse } from '../../types'
+import { getProducts, getUnits, getWarehouses, getRecipes, createGoodsReceipt } from '../../api/client'
+import type { Product, Unit, Warehouse, RecipeSummary } from '../../types'
 
 const router = useRouter()
 const products = ref<Product[]>([])
 const units = ref<Unit[]>([])
+const recipes = ref<RecipeSummary[]>([])
 const warehouses = ref<Warehouse[]>([])
 const saving = ref(false)
 const note = ref('')
@@ -88,6 +103,8 @@ interface ItemForm {
   productId: string
   lotNumber: string
   productionDate: string
+  expiryDate: string
+  recipeId: string
   warehouseId: string
   quantity: number | null
   unitId: string
@@ -95,8 +112,8 @@ interface ItemForm {
 }
 
 const emptyItem = (): ItemForm => ({
-  productId: '', lotNumber: '', productionDate: '', warehouseId: '',
-  quantity: null, unitId: '', unitCost: null
+  productId: '', lotNumber: '', productionDate: '', expiryDate: '',
+  recipeId: '', warehouseId: '', quantity: null, unitId: '', unitCost: null
 })
 
 const items = ref<ItemForm[]>([emptyItem()])
@@ -107,7 +124,11 @@ const productLotRequired = (productId: string) =>
 const onProductChange = (idx: number) => {
   items.value[idx].lotNumber = ''
   items.value[idx].productionDate = ''
+  items.value[idx].expiryDate = ''
+  items.value[idx].recipeId = ''
 }
+
+const productLabel = (id: string) => products.value.find(p => p.id === id)?.code ?? id
 
 const addItem = () => items.value.push(emptyItem())
 const removeItem = (idx: number) => items.value.splice(idx, 1)
@@ -131,6 +152,8 @@ const handleSubmit = async () => {
         productId: i.productId,
         lotNumber: i.lotNumber || undefined,
         productionDate: i.productionDate || undefined,
+        expiryDate: i.expiryDate || undefined,
+        recipeId: i.recipeId || undefined,
         warehouseId: i.warehouseId,
         quantity: i.quantity!,
         unitId: i.unitId,
