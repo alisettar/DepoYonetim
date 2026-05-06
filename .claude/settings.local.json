@@ -9,7 +9,12 @@
       "Bash(git commit -m ' *)",
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Alisettar\\\\source\\\\repos\\\\depo-yonetim\\\\src\\\\backend\" -Directory)",
       "Bash(Select-Object Name)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(Get-ChildItem \"C:\\\\Users\\\\Alisettar\\\\source\\\\repos\\\\depo-yonetim\\\\src\\\\backend\" -Recurse -Directory)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(Sort-Object)"
     ]
   }
 }
