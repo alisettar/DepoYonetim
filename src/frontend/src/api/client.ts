@@ -4,10 +4,11 @@ import type {
   Unit, CreateUnitRequest, UpdateUnitRequest,
   Category, CreateCategoryRequest, UpdateCategoryRequest,
   Product, CreateProductRequest, UpdateProductRequest, AddProductUnitRequest, ProductStatus,
-  StockMovement, StockBalance, GoodsReceiptRequest, MovementType,
+  StockMovement, StockBalance, GoodsReceiptRequest,
   Recipe, RecipeSummary, CreateRecipeRequest, UpdateRecipeRequest,
   AddRecipeVersionRequest, AddRecipeItemRequest, UpdateRecipeItemRequest,
-  AddAlternativeRequest, BomLine, RecipeItem, RecipeVersion,
+  AddAlternativeRequest, BomLine, RecipeItem, RecipeVersion, AlternativeMaterial,
+  LotDetailResponse, TraceChainEntry, UpdateQualityStatusRequest, PaginatedResponse, Lot,
 } from '../types'
 
 const api = axios.create({
@@ -200,6 +201,33 @@ export async function addAlternative(recipeId: string, versionId: string, itemId
 
 export async function deleteAlternative(recipeId: string, versionId: string, itemId: string, alternativeId: string): Promise<void> {
   await api.delete(`/recipes/${recipeId}/versions/${versionId}/items/${itemId}/alternatives/${alternativeId}`)
+}
+
+// Lot Traceability
+export async function getLots(params?: {
+  productId?: string
+  lotNumberFilter?: string
+  qualityStatus?: string
+  page?: number
+  pageSize?: number
+}): Promise<PaginatedResponse<Lot>> {
+  const res = await api.get<PaginatedResponse<Lot>>('/inventory/lots', { params })
+  return res.data
+}
+
+export async function getLotMovements(lotId: string): Promise<LotDetailResponse> {
+  const res = await api.get<LotDetailResponse>(`/inventory/lots/${lotId}/movements`)
+  return res.data
+}
+
+export async function getLotTrace(lotId: string): Promise<TraceChainEntry[]> {
+  const res = await api.get<TraceChainEntry[]>(`/inventory/lots/${lotId}/trace`)
+  return res.data
+}
+
+export async function updateLotQualityStatus(lotId: string, data: UpdateQualityStatusRequest): Promise<Lot> {
+  const res = await api.patch<Lot>(`/inventory/lots/${lotId}/quality-status`, data)
+  return res.data
 }
 
 export { api }

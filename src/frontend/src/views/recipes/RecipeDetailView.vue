@@ -143,7 +143,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { getRecipe, addRecipeVersion, activateRecipeVersion as activateV,
   addRecipeItem, deleteRecipeItem, getProducts, getUnits } from '../../api/client'
-import type { Recipe, RecipeVersion } from '../../types'
+import type { Recipe } from '../../types'
 
 const route = useRoute()
 const recipeId = route.params.id as string
@@ -229,7 +229,7 @@ const removeItem = async (versionId: string, itemId: string) => {
   try { await deleteRecipeItem(recipeId, versionId, itemId); await fetchRecipe() } catch { alert('Kalem silinemedi') }
 }
 
-const removeAlt = async (versionId: string, itemId: string, altId: string) => {
+const removeAlt = async (_versionId: string, _itemId: string, _altId: string) => {
   if (!confirm('Alternatifi silmek istediğinizden emin misiniz?')) return
   try {
     // Alternatives need to go through the recipe-item route

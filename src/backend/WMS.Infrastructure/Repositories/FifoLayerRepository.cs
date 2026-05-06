@@ -22,6 +22,11 @@ public class FifoLayerRepository(AppDbContext db) : IFifoLayerRepository
             .ThenBy(l => l.Id)
             .ToListAsync(ct);
 
+    public Task<List<FifoLayer>> GetLayersByLotIdAsync(Guid lotId, CancellationToken ct)
+        => db.FifoLayers
+            .Where(l => l.LotId == lotId)
+            .ToListAsync(ct);
+
     public void Add(FifoLayer layer) => db.FifoLayers.Add(layer);
 
     public Task SaveAsync(CancellationToken ct) => db.SaveChangesAsync(ct);

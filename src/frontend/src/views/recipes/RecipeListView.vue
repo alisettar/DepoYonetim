@@ -92,7 +92,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getRecipes, createRecipe, updateRecipe, archiveRecipe, getProducts } from '../../api/client'
-import type { RecipeSummary, Recipe } from '../../types'
+import type { RecipeSummary } from '../../types'
 
 const router = useRouter()
 const recipes = ref<RecipeSummary[]>([])

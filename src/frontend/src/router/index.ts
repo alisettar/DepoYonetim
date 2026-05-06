@@ -8,6 +8,9 @@ import MovementsView from '../views/inventory/MovementsView.vue'
 import GoodsReceiptView from '../views/inventory/GoodsReceiptView.vue'
 import RecipeListView from '../views/recipes/RecipeListView.vue'
 import RecipeDetailView from '../views/recipes/RecipeDetailView.vue'
+import LotListView from '../views/lots/LotListView.vue'
+import LotDetailView from '../views/lots/LotDetailView.vue'
+import LotTraceView from '../views/lots/LotTraceView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -20,7 +23,10 @@ const router = createRouter({
     { path: '/recipes', name: 'Recipes', component: RecipeListView },
     { path: '/recipes/:id', name: 'RecipeDetail', component: RecipeDetailView },
     { path: '/inventory/movements', name: 'Movements', component: MovementsView },
-    { path: '/inventory/goods-receipt', name: 'GoodsReceipt', component: GoodsReceiptView }
+    { path: '/inventory/goods-receipt', name: 'GoodsReceipt', component: GoodsReceiptView },
+    { path: '/lots', name: 'Lots', component: LotListView },
+    { path: '/lots/:id', name: 'LotDetail', component: LotDetailView },
+    { path: '/lots/:id/trace', name: 'LotTrace', component: LotTraceView }
   ]
 })
 

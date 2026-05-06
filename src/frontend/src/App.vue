@@ -33,6 +33,10 @@
         <li>
           <router-link to="/inventory/goods-receipt">Mal Kabul</router-link>
         </li>
+        <li class="nav-section">Lot Yönetimi</li>
+        <li>
+          <router-link to="/lots">Lot Listesi</router-link>
+        </li>
       </ul>
     </nav>
     <main class="content">

@@ -51,3 +51,15 @@ public record StockBalanceDto(
     public static StockBalanceDto FromEntity(StockBalance b) =>
         new(b.Id, b.ProductId, b.LotId, b.WarehouseId, b.MachineWarehouseId, b.Quantity, b.UpdatedAt);
 }
+
+public record LotDetailResponse(
+    LotDto Lot,
+    List<StockMovementDto> Movements,
+    StockBalanceDto? CurrentBalance);
+
+public record TraceChainEntry(
+    StockMovementDto Movement,
+    bool IsOutbound,
+    bool IsInbound,
+    decimal CumulativeConsumed,
+    decimal RunningBalance);

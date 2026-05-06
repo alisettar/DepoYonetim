@@ -293,3 +293,30 @@ export interface AddAlternativeRequest {
   quantity: number
   unitId: string
 }
+
+// Lot Traceability
+export interface PaginatedResponse<T> {
+  items: T[]
+  page: number
+  pageSize: number
+  totalCount: number
+  totalPages: number
+}
+
+export interface LotDetailResponse {
+  lot: Lot
+  movements: StockMovement[]
+  currentBalance: StockBalance | null
+}
+
+export interface TraceChainEntry {
+  movement: StockMovement
+  isOutbound: boolean
+  isInbound: boolean
+  cumulativeConsumed: number
+  runningBalance: number
+}
+
+export interface UpdateQualityStatusRequest {
+  qualityStatus: string
+}

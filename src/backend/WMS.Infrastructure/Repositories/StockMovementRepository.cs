@@ -31,6 +31,28 @@ public class StockMovementRepository(AppDbContext db) : IStockMovementRepository
     public Task<StockMovement?> GetByIdAsync(Guid id, CancellationToken ct)
         => db.StockMovements.FirstOrDefaultAsync(m => m.Id == id, ct);
 
+    public async Task<(List<StockMovement> Items, int TotalCount)> GetAllPagedForLotAsync(
+        Guid lotId, int page, int pageSize, CancellationToken ct)
+    {
+        var query = db.StockMovements
+            .Where(m => m.LotId == lotId && !m.IsVoided)
+            .OrderByDescending(m => m.OccurredAt);
+
+        var totalCount = await query.CountAsync(ct);
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(ct);
+
+        return (items, totalCount);
+    }
+
+    public Task<List<StockMovement>> GetTraceChainAsync(Guid lotId, CancellationToken ct)
+        => db.StockMovements
+            .Where(m => m.LotId == lotId && !m.IsVoided)
+            .OrderByDescending(m => m.OccurredAt)
+            .ToListAsync(ct);
+
     public void Add(StockMovement movement) => db.StockMovements.Add(movement);
 
     public Task SaveAsync(CancellationToken ct) => db.SaveChangesAsync(ct);
