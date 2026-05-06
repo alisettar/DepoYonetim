@@ -35,7 +35,7 @@ public class FifoLayer
             MachineWarehouseId = machineWarehouseId,
             LocationId = locationId,
             LotId = lotId,
-            ReceiptDate = receiptDate,
+            ReceiptDate = NormalizeUtc(receiptDate),
             RemainingQuantity = quantity,
             UnitCost = unitCost,
             SourceMovementId = sourceMovementId,
@@ -51,4 +51,7 @@ public class FifoLayer
             IsClosed = true;
         return taken;
     }
+
+    private static DateTime NormalizeUtc(DateTime dt) =>
+        dt.Kind != DateTimeKind.Utc ? DateTime.SpecifyKind(dt, DateTimeKind.Utc) : dt;
 }

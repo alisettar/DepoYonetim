@@ -22,6 +22,10 @@
         <li>
           <router-link to="/units">Birimler</router-link>
         </li>
+        <li class="nav-section">Reçeteler</li>
+        <li>
+          <router-link to="/recipes">Reçete Listesi</router-link>
+        </li>
         <li class="nav-section">Envanter</li>
         <li>
           <router-link to="/inventory/movements">Hareketler</router-link>

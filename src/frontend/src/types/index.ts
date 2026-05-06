@@ -192,3 +192,104 @@ export interface GoodsReceiptRequest {
   items: GoodsReceiptItemRequest[]
   note?: string
 }
+
+// Recipe
+export type RecipeStatus = 'Draft' | 'Active' | 'Archived'
+
+export interface BomLine {
+  productId: string
+  level: number
+  quantity: number
+  unitId: string
+  wastePercent: number | null
+  wasteFixed: number | null
+  effectiveQuantity: number
+}
+
+export interface AlternativeMaterial {
+  id: string
+  productId: string
+  priority: number
+  quantity: number
+  unitId: string
+}
+
+export interface RecipeItem {
+  id: string
+  productId: string
+  quantity: number
+  unitId: string
+  wastePercent: number | null
+  wasteFixed: number | null
+  sortOrder: number
+  alternatives: AlternativeMaterial[]
+}
+
+export interface RecipeVersion {
+  id: string
+  versionNo: number
+  validFrom: string
+  validUntil: string | null
+  isActive: boolean
+  outputQuantity: number
+  outputUnitId: string
+  items: RecipeItem[]
+}
+
+export interface Recipe {
+  id: string
+  productId: string
+  name: string
+  status: RecipeStatus
+  createdAt: string
+  versions: RecipeVersion[]
+}
+
+export interface RecipeSummary {
+  id: string
+  productId: string
+  name: string
+  status: RecipeStatus
+  versionCount: number
+  createdAt: string
+}
+
+export interface CreateRecipeRequest {
+  productId: string
+  name: string
+}
+
+export interface UpdateRecipeRequest {
+  name: string
+}
+
+export interface AddRecipeVersionRequest {
+  validFrom: string
+  validUntil: string | null
+  outputQuantity: number
+  outputUnitId: string
+}
+
+export interface AddRecipeItemRequest {
+  productId: string
+  quantity: number
+  unitId: string
+  wastePercent?: number
+  wasteFixed?: number
+  sortOrder?: number
+}
+
+export interface UpdateRecipeItemRequest {
+  quantity: number
+  unitId: string
+  wastePercent?: number
+  wasteFixed?: number
+  sortOrder?: number
+}
+
+export interface AddAlternativeRequest {
+  productId: string
+  priority: number
+  quantity: number
+  unitId: string
+}

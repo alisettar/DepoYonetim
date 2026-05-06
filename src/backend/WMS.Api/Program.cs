@@ -8,6 +8,7 @@ using WMS.Application.Warehousing;
 using WMS.Infrastructure.Persistence;
 using WMS.Infrastructure.Persistence.Seeds;
 using WMS.Infrastructure.Repositories;
+using WMS.Application.Recipes;
 using WMS.Infrastructure.Services;
 using WMS.Shared.Common;
 
@@ -53,6 +54,7 @@ builder.Services.AddScoped<ILotRepository, LotRepository>();
 builder.Services.AddScoped<IStockMovementRepository, StockMovementRepository>();
 builder.Services.AddScoped<IStockBalanceRepository, StockBalanceRepository>();
 builder.Services.AddScoped<IFifoLayerRepository, FifoLayerRepository>();
+builder.Services.AddScoped<IRecipeRepository, RecipeRepository>();
 
 var app = builder.Build();
 
@@ -78,6 +80,7 @@ app.MapUnitsEndpoints();
 app.MapCategoriesEndpoints();
 app.MapProductsEndpoints();
 app.MapInventoryEndpoints();
+app.MapRecipesEndpoints();
 
 app.Run();
 

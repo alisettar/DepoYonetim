@@ -38,8 +38,10 @@ public class RecipeVersion
             Id = Guid.NewGuid(),
             RecipeId = recipeId,
             VersionNo = versionNo,
-            ValidFrom = validFrom,
-            ValidUntil = validUntil,
+            ValidFrom = validFrom.Kind != DateTimeKind.Utc ? DateTime.SpecifyKind(validFrom, DateTimeKind.Utc) : validFrom,
+            ValidUntil = validUntil.HasValue && validUntil.Value.Kind != DateTimeKind.Utc
+                ? DateTime.SpecifyKind(validUntil.Value, DateTimeKind.Utc)
+                : validUntil,
             IsActive = false,
             OutputQuantity = outputQuantity,
             OutputUnitId = outputUnitId
@@ -49,7 +51,7 @@ public class RecipeVersion
     public void Update(DateTime validFrom, DateTime? validUntil, decimal outputQuantity, Guid outputUnitId)
     {
         if (IsActive)
-            throw new BusinessException("Aktif versiyon güncellenemez.", "VERSION_IS_ACTIVE");
+            throw new BusinessException("VERSION_IS_ACTIVE", "Aktif versiyon güncellenemez.");
         if (outputQuantity <= 0)
             throw new ArgumentException("Çıkış miktarı sıfırdan büyük olmalıdır.", nameof(outputQuantity));
         if (outputUnitId == Guid.Empty)
@@ -57,8 +59,10 @@ public class RecipeVersion
         if (validUntil.HasValue && validUntil <= validFrom)
             throw new ArgumentException("Bitiş tarihi başlangıç tarihinden sonra olmalıdır.", nameof(validUntil));
 
-        ValidFrom = validFrom;
-        ValidUntil = validUntil;
+        ValidFrom = validFrom.Kind != DateTimeKind.Utc ? DateTime.SpecifyKind(validFrom, DateTimeKind.Utc) : validFrom;
+        ValidUntil = validUntil.HasValue && validUntil.Value.Kind != DateTimeKind.Utc
+            ? DateTime.SpecifyKind(validUntil.Value, DateTimeKind.Utc)
+            : validUntil;
         OutputQuantity = outputQuantity;
         OutputUnitId = outputUnitId;
     }
@@ -75,7 +79,7 @@ public class RecipeVersion
         int sortOrder = 0)
     {
         if (_items.Any(i => i.ProductId == productId))
-            throw new BusinessException("Bu ürün zaten reçete kaleminde mevcut.", "ITEM_ALREADY_EXISTS");
+            throw new BusinessException("ITEM_ALREADY_EXISTS", "Bu ürün zaten reçete kaleminde mevcut.");
 
         var item = RecipeItem.Create(Id, productId, quantity, unitId, wastePercent, wasteFixed, sortOrder);
         _items.Add(item);
@@ -85,11 +89,11 @@ public class RecipeVersion
     public void RemoveItem(Guid itemId)
     {
         var item = _items.FirstOrDefault(i => i.Id == itemId)
-            ?? throw new BusinessException("Reçete kalemi bulunamadı.", "ITEM_NOT_FOUND");
+            ?? throw new BusinessException("ITEM_NOT_FOUND", "Reçete kalemi bulunamadı.");
         _items.Remove(item);
     }
 
     public RecipeItem GetItem(Guid itemId) =>
         _items.FirstOrDefault(i => i.Id == itemId)
-        ?? throw new BusinessException("Reçete kalemi bulunamadı.", "ITEM_NOT_FOUND");
+        ?? throw new BusinessException("ITEM_NOT_FOUND", "Reçete kalemi bulunamadı.");
 }

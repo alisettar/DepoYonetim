@@ -24,7 +24,7 @@ public class DeleteRecipeItemHandler(IRecipeRepository repo)
         }
         catch (BusinessException ex)
         {
-            return Result.Failure(ex.Code, ex.Message);
+            return Result.Failure(ex.ErrorCode, ex.Message);
         }
     }
 }

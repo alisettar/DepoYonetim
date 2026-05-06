@@ -53,9 +53,9 @@ public class Warehouse
     public WarehouseLocation CreateLocation(string code, string name, decimal? capacity = null)
     {
         if (Type == WarehouseType.Machine)
-            throw new BusinessException("Makine deposuna konum eklenemez.", "MACHINE_WAREHOUSE_NO_LOCATIONS");
+            throw new BusinessException("MACHINE_WAREHOUSE_NO_LOCATIONS", "Makine deposuna konum eklenemez.");
         if (Status != WarehouseStatus.Active)
-            throw new BusinessException("Devre dışı depoya konum eklenemez.", "WAREHOUSE_INACTIVE");
+            throw new BusinessException("WAREHOUSE_INACTIVE", "Devre dışı depoya konum eklenemez.");
 
         var location = WarehouseLocation.Create(Id, code, name, capacity);
         _locations.Add(location);
@@ -79,7 +79,7 @@ public class Warehouse
     {
         if (_locations.Any(l => l.IsActive))
             throw new BusinessException(
-                "Aktif konumları olan depo devre dışı bırakılamaz.", "WAREHOUSE_HAS_ACTIVE_LOCATIONS");
+                "WAREHOUSE_HAS_ACTIVE_LOCATIONS", "Aktif konumları olan depo devre dışı bırakılamaz.");
         Status = WarehouseStatus.Inactive;
     }
 }

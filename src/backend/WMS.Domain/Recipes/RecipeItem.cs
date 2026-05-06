@@ -72,9 +72,9 @@ public class RecipeItem
     public AlternativeMaterial AddAlternative(Guid productId, int priority, decimal quantity, Guid unitId)
     {
         if (productId == ProductId)
-            throw new BusinessException("Alternatif malzeme ana malzeme ile aynı olamaz.", "ALT_SAME_AS_MAIN");
+            throw new BusinessException("ALT_SAME_AS_MAIN", "Alternatif malzeme ana malzeme ile aynı olamaz.");
         if (_alternatives.Any(a => a.ProductId == productId))
-            throw new BusinessException("Bu ürün zaten alternatif olarak tanımlı.", "ALT_ALREADY_EXISTS");
+            throw new BusinessException("ALT_ALREADY_EXISTS", "Bu ürün zaten alternatif olarak tanımlı.");
 
         var alt = AlternativeMaterial.Create(Id, productId, priority, quantity, unitId);
         _alternatives.Add(alt);
@@ -84,7 +84,7 @@ public class RecipeItem
     public void RemoveAlternative(Guid alternativeId)
     {
         var alt = _alternatives.FirstOrDefault(a => a.Id == alternativeId)
-            ?? throw new BusinessException("Alternatif malzeme bulunamadı.", "ALT_NOT_FOUND");
+            ?? throw new BusinessException("ALT_NOT_FOUND", "Alternatif malzeme bulunamadı.");
         _alternatives.Remove(alt);
     }
 }

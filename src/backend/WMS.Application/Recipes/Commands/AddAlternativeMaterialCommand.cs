@@ -1,5 +1,6 @@
 using MediatR;
 using WMS.Application.Recipes.Dtos;
+using WMS.Domain.Recipes;
 using WMS.Shared.Exceptions;
 using WMS.Shared.Result;
 
@@ -25,15 +26,22 @@ public class AddAlternativeMaterialHandler(IRecipeRepository repo)
 
         try
         {
-            var version = recipe.GetVersion(request.VersionId);
-            var item = version.GetItem(request.ItemId);
-            var alt = item.AddAlternative(request.ProductId, request.Priority, request.Quantity, request.UnitId);
+            var item = recipe.GetVersion(request.VersionId)
+                .GetItem(request.ItemId);
+
+            var alt = AlternativeMaterial.Create(
+                item.Id,
+                request.ProductId,
+                request.Priority,
+                request.Quantity,
+                request.UnitId);
+            await repo.AddAlternativeAsync(alt, ct);
             await repo.SaveAsync(ct);
             return Result.Success(AlternativeMaterialDto.FromEntity(alt));
         }
         catch (BusinessException ex)
         {
-            return Result.Failure<AlternativeMaterialDto>(ex.Code, ex.Message);
+            return Result.Failure<AlternativeMaterialDto>(ex.ErrorCode, ex.Message);
         }
         catch (ArgumentException ex)
         {

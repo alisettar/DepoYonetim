@@ -14,7 +14,8 @@ public class RecipeRepository(AppDbContext db) : IRecipeRepository
             .ToListAsync(ct);
 
     public Task<Recipe?> GetByIdAsync(Guid id, CancellationToken ct) =>
-        db.Recipes.FirstOrDefaultAsync(r => r.Id == id, ct);
+        db.Recipes.Include(r => r.Versions)
+            .FirstOrDefaultAsync(r => r.Id == id, ct);
 
     public Task<Recipe?> GetByIdWithVersionsAsync(Guid id, CancellationToken ct) =>
         db.Recipes
@@ -29,4 +30,22 @@ public class RecipeRepository(AppDbContext db) : IRecipeRepository
     public void Add(Recipe recipe) => db.Recipes.Add(recipe);
     public void Remove(Recipe recipe) => db.Recipes.Remove(recipe);
     public Task SaveAsync(CancellationToken ct) => db.SaveChangesAsync(ct);
+
+    public Task<RecipeVersion> AddVersionAsync(RecipeVersion version, CancellationToken ct)
+    {
+        db.RecipeVersions.Add(version);
+        return Task.FromResult(version);
+    }
+
+    public Task<RecipeItem> AddRecipeItemAsync(RecipeItem item, CancellationToken ct)
+    {
+        db.RecipeItems.Add(item);
+        return Task.FromResult(item);
+    }
+
+    public Task<AlternativeMaterial> AddAlternativeAsync(AlternativeMaterial alt, CancellationToken ct)
+    {
+        db.AlternativeMaterials.Add(alt);
+        return Task.FromResult(alt);
+    }
 }

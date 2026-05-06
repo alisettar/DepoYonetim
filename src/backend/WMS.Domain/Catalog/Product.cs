@@ -119,9 +119,9 @@ public class Product
     public ProductUnit AddUnit(Guid unitId, decimal conversionToPrimary)
     {
         if (unitId == PrimaryUnitId)
-            throw new BusinessException("Birincil birim ek birim olarak eklenemez.", "UNIT_IS_PRIMARY");
+            throw new BusinessException("UNIT_IS_PRIMARY", "Birincil birim ek birim olarak eklenemez.");
         if (_units.Any(u => u.UnitId == unitId))
-            throw new BusinessException("Bu birim zaten tanımlı.", "UNIT_ALREADY_EXISTS");
+            throw new BusinessException("UNIT_ALREADY_EXISTS", "Bu birim zaten tanımlı.");
 
         var pu = ProductUnit.Create(Id, unitId, conversionToPrimary);
         _units.Add(pu);
@@ -132,7 +132,7 @@ public class Product
     public void RemoveUnit(Guid productUnitId)
     {
         var pu = _units.FirstOrDefault(u => u.Id == productUnitId)
-            ?? throw new BusinessException("Ürün birimi bulunamadı.", "PRODUCT_UNIT_NOT_FOUND");
+            ?? throw new BusinessException("PRODUCT_UNIT_NOT_FOUND", "Ürün birimi bulunamadı.");
         _units.Remove(pu);
         UpdatedAt = DateTime.UtcNow;
     }

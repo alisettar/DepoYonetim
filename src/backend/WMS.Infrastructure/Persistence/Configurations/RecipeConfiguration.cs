@@ -12,8 +12,7 @@ public class RecipeConfiguration : IEntityTypeConfiguration<Recipe>
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Name).IsRequired().HasMaxLength(200);
         builder.Property(e => e.Status).IsRequired().HasConversion<string>().HasMaxLength(20);
-        builder.Property(e => e.CreatedAt).IsRequired();
-        builder.Property(e => e.UpdatedAt).IsRequired();
+        builder.Property(e => e.CreatedAt).IsRequired().ValueGeneratedOnAdd();
 
         builder.HasMany(e => e.Versions)
             .WithOne()

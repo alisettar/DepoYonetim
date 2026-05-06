@@ -24,7 +24,7 @@ public class ActivateRecipeVersionHandler(IRecipeRepository repo)
         }
         catch (BusinessException ex)
         {
-            return Result.Failure<RecipeDto>(ex.Code, ex.Message);
+            return Result.Failure<RecipeDto>(ex.ErrorCode, ex.Message);
         }
     }
 }

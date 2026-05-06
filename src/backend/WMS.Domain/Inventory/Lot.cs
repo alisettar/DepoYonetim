@@ -36,8 +36,8 @@ public class Lot
             ProductId = productId,
             LotNumber = lotNumber,
             Source = source,
-            ProductionDate = productionDate ?? DateTime.UtcNow,
-            ExpiryDate = expiryDate,
+            ProductionDate = NormalizeUtc(productionDate) ?? DateTime.UtcNow,
+            ExpiryDate = NormalizeUtc(expiryDate),
             SourceReferenceId = sourceReferenceId,
             QualityStatus = QualityStatus.OK,
             CreatedAt = DateTime.UtcNow
@@ -48,4 +48,9 @@ public class Lot
     {
         QualityStatus = newStatus;
     }
+
+    private static DateTime? NormalizeUtc(DateTime? dt) =>
+        dt.HasValue && dt.Value.Kind != DateTimeKind.Utc
+            ? DateTime.SpecifyKind(dt.Value, DateTimeKind.Utc)
+            : dt;
 }

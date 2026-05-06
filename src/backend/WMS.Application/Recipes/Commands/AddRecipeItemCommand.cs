@@ -1,5 +1,6 @@
 using MediatR;
 using WMS.Application.Recipes.Dtos;
+using WMS.Domain.Recipes;
 using WMS.Shared.Exceptions;
 using WMS.Shared.Result;
 
@@ -27,15 +28,21 @@ public class AddRecipeItemHandler(IRecipeRepository repo)
         try
         {
             var version = recipe.GetVersion(request.VersionId);
-            var item = version.AddItem(
-                request.ProductId, request.Quantity, request.UnitId,
-                request.WastePercent, request.WasteFixed, request.SortOrder);
+            var item = RecipeItem.Create(
+                request.VersionId,
+                request.ProductId,
+                request.Quantity,
+                request.UnitId,
+                request.WastePercent,
+                request.WasteFixed,
+                request.SortOrder);
+            await repo.AddRecipeItemAsync(item, ct);
             await repo.SaveAsync(ct);
             return Result.Success(RecipeItemDto.FromEntity(item));
         }
         catch (BusinessException ex)
         {
-            return Result.Failure<RecipeItemDto>(ex.Code, ex.Message);
+            return Result.Failure<RecipeItemDto>(ex.ErrorCode, ex.Message);
         }
         catch (ArgumentException ex)
         {

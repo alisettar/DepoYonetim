@@ -51,12 +51,11 @@ public record RecipeDto(
     string Name,
     string Status,
     DateTime CreatedAt,
-    DateTime UpdatedAt,
     List<RecipeVersionDto> Versions)
 {
     public static RecipeDto FromEntity(Recipe e) =>
         new(e.Id, e.ProductId, e.Name, e.Status.ToString(),
-            e.CreatedAt, e.UpdatedAt,
+            e.CreatedAt,
             e.Versions.OrderBy(v => v.VersionNo).Select(RecipeVersionDto.FromEntity).ToList());
 }
 
@@ -66,10 +65,10 @@ public record RecipeSummaryDto(
     string Name,
     string Status,
     int VersionCount,
-    DateTime UpdatedAt)
+    DateTime CreatedAt)
 {
     public static RecipeSummaryDto FromEntity(Recipe e) =>
-        new(e.Id, e.ProductId, e.Name, e.Status.ToString(), e.Versions.Count, e.UpdatedAt);
+        new(e.Id, e.ProductId, e.Name, e.Status.ToString(), e.Versions.Count, e.CreatedAt);
 }
 
 public record BomLineDto(

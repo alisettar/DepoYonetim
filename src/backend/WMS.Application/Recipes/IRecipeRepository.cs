@@ -11,4 +11,7 @@ public interface IRecipeRepository
     void Add(Recipe recipe);
     void Remove(Recipe recipe);
     Task SaveAsync(CancellationToken ct);
+    Task<RecipeVersion> AddVersionAsync(RecipeVersion version, CancellationToken ct);
+    Task<RecipeItem> AddRecipeItemAsync(RecipeItem item, CancellationToken ct);
+    Task<AlternativeMaterial> AddAlternativeAsync(AlternativeMaterial alt, CancellationToken ct);
 }

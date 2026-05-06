@@ -9,5 +9,6 @@ public static class DatabaseSeeder
         CategorySeed.Seed(db);
         ProductSeed.Seed(db);
         InventorySeed.Seed(db);
+        RecipeSeed.Seed(db);
     }
 }

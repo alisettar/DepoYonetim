@@ -4,7 +4,10 @@ import type {
   Unit, CreateUnitRequest, UpdateUnitRequest,
   Category, CreateCategoryRequest, UpdateCategoryRequest,
   Product, CreateProductRequest, UpdateProductRequest, AddProductUnitRequest, ProductStatus,
-  StockMovement, StockBalance, GoodsReceiptRequest, MovementType
+  StockMovement, StockBalance, GoodsReceiptRequest, MovementType,
+  Recipe, RecipeSummary, CreateRecipeRequest, UpdateRecipeRequest,
+  AddRecipeVersionRequest, AddRecipeItemRequest, UpdateRecipeItemRequest,
+  AddAlternativeRequest, BomLine, RecipeItem, RecipeVersion,
 } from '../types'
 
 const api = axios.create({
@@ -128,6 +131,75 @@ export async function getBalances(params?: { productId?: string; warehouseId?: s
 export async function createGoodsReceipt(data: GoodsReceiptRequest): Promise<StockMovement[]> {
   const res = await api.post<StockMovement[]>('/inventory/goods-receipts', data)
   return res.data
+}
+
+// Recipes
+export async function getRecipes(productId?: string): Promise<RecipeSummary[]> {
+  const params = productId ? { productId } : {}
+  const res = await api.get<RecipeSummary[]>('/recipes', { params })
+  return res.data
+}
+
+export async function getRecipe(id: string): Promise<Recipe> {
+  const res = await api.get<Recipe>(`/recipes/${id}`)
+  return res.data
+}
+
+export async function createRecipe(data: CreateRecipeRequest): Promise<Recipe> {
+  const res = await api.post<Recipe>('/recipes', data)
+  return res.data
+}
+
+export async function updateRecipe(id: string, data: UpdateRecipeRequest): Promise<Recipe> {
+  const res = await api.patch<Recipe>(`/recipes/${id}`, data)
+  return res.data
+}
+
+export async function archiveRecipe(id: string): Promise<void> {
+  await api.delete(`/recipes/${id}`)
+}
+
+export async function getRecipeVersions(id: string): Promise<RecipeVersion[]> {
+  const res = await api.get<RecipeVersion[]>(`/recipes/${id}/versions`)
+  return res.data
+}
+
+export async function addRecipeVersion(id: string, data: AddRecipeVersionRequest): Promise<RecipeVersion> {
+  const res = await api.post<RecipeVersion>(`/recipes/${id}/versions`, data)
+  return res.data
+}
+
+export async function activateRecipeVersion(id: string, versionId: string): Promise<Recipe> {
+  const res = await api.post<Recipe>(`/recipes/${id}/versions/${versionId}/activate`)
+  return res.data
+}
+
+export async function explodeRecipeBom(id: string, versionId: string): Promise<BomLine[]> {
+  const res = await api.post<BomLine[]>(`/recipes/${id}/versions/${versionId}/explode`)
+  return res.data
+}
+
+export async function addRecipeItem(recipeId: string, versionId: string, data: AddRecipeItemRequest): Promise<RecipeItem> {
+  const res = await api.post<RecipeItem>(`/recipes/${recipeId}/versions/${versionId}/items`, data)
+  return res.data
+}
+
+export async function updateRecipeItem(recipeId: string, versionId: string, itemId: string, data: UpdateRecipeItemRequest): Promise<RecipeItem> {
+  const res = await api.patch<RecipeItem>(`/recipes/${recipeId}/versions/${versionId}/items/${itemId}`, data)
+  return res.data
+}
+
+export async function deleteRecipeItem(recipeId: string, versionId: string, itemId: string): Promise<void> {
+  await api.delete(`/recipes/${recipeId}/versions/${versionId}/items/${itemId}`)
+}
+
+export async function addAlternative(recipeId: string, versionId: string, itemId: string, data: AddAlternativeRequest): Promise<AlternativeMaterial> {
+  const res = await api.post<AlternativeMaterial>(`/recipes/${recipeId}/versions/${versionId}/items/${itemId}/alternatives`, data)
+  return res.data
+}
+
+export async function deleteAlternative(recipeId: string, versionId: string, itemId: string, alternativeId: string): Promise<void> {
+  await api.delete(`/recipes/${recipeId}/versions/${versionId}/items/${itemId}/alternatives/${alternativeId}`)
 }
 
 export { api }
