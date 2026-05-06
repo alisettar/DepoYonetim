@@ -9,6 +9,7 @@ import type {
   AddRecipeVersionRequest, AddRecipeItemRequest, UpdateRecipeItemRequest,
   AddAlternativeRequest, BomLine, RecipeItem, RecipeVersion, AlternativeMaterial,
   LotDetailResponse, TraceChainEntry, UpdateQualityStatusRequest, PaginatedResponse, Lot,
+  CriticalStockItem, WarehouseFillItem, RecentMovementDto, LotSearchItem,
 } from '../types'
 
 const api = axios.create({
@@ -227,6 +228,29 @@ export async function getLotTrace(lotId: string): Promise<TraceChainEntry[]> {
 
 export async function updateLotQualityStatus(lotId: string, data: UpdateQualityStatusRequest): Promise<Lot> {
   const res = await api.patch<Lot>(`/inventory/lots/${lotId}/quality-status`, data)
+  return res.data
+}
+
+// Dashboard
+export async function getCriticalStock(): Promise<CriticalStockItem[]> {
+  const res = await api.get<CriticalStockItem[]>('/dashboard/critical-stock')
+  return res.data
+}
+
+export async function getWarehouseFill(): Promise<WarehouseFillItem[]> {
+  const res = await api.get<WarehouseFillItem[]>('/dashboard/warehouse-fill')
+  return res.data
+}
+
+export async function getRecentMovements(count = 20): Promise<RecentMovementDto[]> {
+  const res = await api.get<RecentMovementDto[]>('/dashboard/recent-movements', { params: { count } })
+  return res.data
+}
+
+export async function searchLots(query: string, productId?: string): Promise<LotSearchItem[]> {
+  const params: { q: string; productId?: string } = { q: query }
+  if (productId) params.productId = productId
+  const res = await api.get<LotSearchItem[]>('/dashboard/lot-search', { params })
   return res.data
 }
 

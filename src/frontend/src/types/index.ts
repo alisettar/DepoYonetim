@@ -122,10 +122,53 @@ export interface AddProductUnitRequest {
 }
 
 // Dashboard
-export interface DashboardStats {
-  totalWarehouses: number
-  totalLocations: number
-  activeWarehouses: number
+export interface CriticalStockItem {
+  productId: string
+  productCode: string
+  productName: string
+  unitId: string
+  unitName: string
+  currentQty: number
+  minStock: number
+  fillRatio: number
+}
+
+export interface WarehouseFillItem {
+  warehouseId: string
+  warehouseName: string
+  locationId: string
+  locationCode: string
+  locationName: string
+  filledQuantity: number
+  capacity: number | null
+  fillPercent: number | null
+}
+
+export interface RecentMovementDto {
+  id: string
+  occurredAt: string
+  type: string
+  productCode: string
+  productName: string
+  quantity: number
+  unitName: string
+  lotId: string | null
+  lotNumber: string | null
+  warehouseName: string | null
+  note: string | null
+  createdByUserId: string
+}
+
+export interface LotSearchItem {
+  id: string
+  lotNumber: string
+  productId: string
+  productCode: string
+  productName: string
+  qualityStatus: string
+  expiryDate: string | null
+  productionDate: string
+  availableQty: number | null
 }
 
 // Inventory

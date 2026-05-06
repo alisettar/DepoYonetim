@@ -82,13 +82,12 @@
         </button>
       </div>
     </div>
-  </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { getProducts, getUnits, getWarehouses, getRecipes, createGoodsReceipt } from '../../api/client'
+import { getProducts, getUnits, getWarehouses, createGoodsReceipt } from '../../api/client'
 import type { Product, Unit, Warehouse, RecipeSummary } from '../../types'
 
 const router = useRouter()
