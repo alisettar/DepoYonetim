@@ -4,8 +4,10 @@ namespace WMS.Shared.Result;
 
 public static class ResultExtensions
 {
-    public static System.Threading.Tasks.Task<Result> ToTask(this Result result) => System.Threading.Tasks.Task.FromResult(result);
-    public static System.Threading.Tasks.Task<Result<T>> ToTask<T>(this Result<T> result) => System.Threading.Tasks.Task.FromResult(result);
+    public static System.Threading.Tasks.Task<Result> ToTask(this Result result)
+        => System.Threading.Tasks.Task.FromResult(result);
+    public static System.Threading.Tasks.Task<Result<T>> ToTask<T>(this Result<T> result)
+        => System.Threading.Tasks.Task.FromResult(result);
 }
 
 public class Result<T> : Result
@@ -17,6 +19,12 @@ public class Result<T> : Result
     {
         Value = value;
     }
+
+    public static Result<T> MakeFailure(string errorCode, string message)
+        => new(default, false, message, errorCode);
+
+    public static Result<T> MakeSuccess(T value)
+        => new(value, true, null, null);
 
     public void Match(Action<T> onSuccess, Action onError)
     {

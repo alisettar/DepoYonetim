@@ -1,32 +1,56 @@
 using Microsoft.EntityFrameworkCore;
+using WMS.Domain.Catalog;
+using WMS.Domain.Identity;
+using WMS.Infrastructure.Services;
 using WMS.Shared.Common;
 
 namespace WMS.Infrastructure.Persistence;
 
 public class AppDbContext(
-    DbContextOptions<AppDbContext> options,
     ITenantContext tenantContext,
-    string tenantConnectionString) : DbContext(options)
+    ICachedTenantConnectionFactory connectionFactory)
+    : DbContext(ResolveOptions(tenantContext, connectionFactory))
 {
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    private static DbContextOptions<AppDbContext> ResolveOptions(
+        ITenantContext tenantContext,
+        ICachedTenantConnectionFactory connectionFactory)
     {
-        if (!optionsBuilder.IsConfigured)
-            optionsBuilder.UseNpgsql(tenantConnectionString);
+        var connectionString = connectionFactory.GetConnectionString(tenantContext.TenantId)
+            ?? throw new InvalidOperationException(
+                $"No connection string for tenant {tenantContext.TenantId}");
 
-        base.OnConfiguring(optionsBuilder);
+        return new DbContextOptionsBuilder<AppDbContext>()
+            .UseNpgsql(connectionString)
+            .Options;
     }
 
     public Guid TenantId => tenantContext.TenantId;
     public Guid UserId => tenantContext.UserId;
 
-    // Placeholder for tenant-specific entity sets — populated in M2
-    // DbSet<Product> Products => Set<Product>();
-    // DbSet<Warehouse> Warehouses => Set<Warehouse>();
+    public DbSet<TenantUser> TenantUsers => Set<TenantUser>();
+    public DbSet<SuperAdmin> SuperAdmins => Set<SuperAdmin>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // Tenant-specific entity sets will be added in M2
-        // Placeholder: configure global query filters here
+        modelBuilder.Entity<TenantUser>(entity =>
+        {
+            entity.ToTable("tenant_users");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.TenantId, e.Email }).IsUnique();
+            entity.Property(e => e.Email).IsRequired().HasMaxLength(256);
+            entity.Property(e => e.PasswordHash).IsRequired().HasMaxLength(256);
+            entity.Property(e => e.FullName).IsRequired().HasMaxLength(256);
+            entity.Property(e => e.RoleCode).IsRequired().HasMaxLength(64);
+        });
+
+        modelBuilder.Entity<SuperAdmin>(entity =>
+        {
+            entity.ToTable("super_admins");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.Email).IsUnique();
+            entity.Property(e => e.Email).IsRequired().HasMaxLength(256);
+            entity.Property(e => e.PasswordHash).IsRequired().HasMaxLength(256);
+        });
 
         base.OnModelCreating(modelBuilder);
     }

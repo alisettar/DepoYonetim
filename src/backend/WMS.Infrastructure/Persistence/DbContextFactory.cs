@@ -17,6 +17,6 @@ public class AppDbContextFactory(
             .UseNpgsql(connectionString)
             .Options;
 
-        return new AppDbContext(options, tenantContext, connectionString);
+        return new AppDbContext(tenantContext, connectionFactory);
     }
 }
