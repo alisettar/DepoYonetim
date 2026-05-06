@@ -1,13 +1,14 @@
 import axios from 'axios'
-import type { Warehouse, CreateWarehouseRequest, UpdateWarehouseRequest } from '../types'
+import type { Warehouse, CreateWarehouseRequest, UpdateWarehouseRequest, WarehouseType } from '../types'
 
 const api = axios.create({
   baseURL: '/api/v1',
   timeout: 10000
 })
 
-export async function getWarehouses(): Promise<Warehouse[]> {
-  const res = await api.get<Warehouse[]>('/warehouses')
+export async function getWarehouses(type?: WarehouseType): Promise<Warehouse[]> {
+  const params = type ? { type } : {}
+  const res = await api.get<Warehouse[]>('/warehouses', { params })
   return res.data
 }
 

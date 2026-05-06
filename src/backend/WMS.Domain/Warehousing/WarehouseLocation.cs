@@ -4,45 +4,39 @@ public class WarehouseLocation
 {
     public Guid Id { get; private set; }
     public Guid WarehouseId { get; private set; }
-    public string Zone { get; private set; } = string.Empty;
-    public string Aisle { get; private set; } = string.Empty;
-    public string Section { get; private set; } = string.Empty;
-    public string Bin { get; private set; } = string.Empty;
+    public string Code { get; private set; } = string.Empty;
+    public string Name { get; private set; } = string.Empty;
+    public decimal? Capacity { get; private set; }
     public bool IsActive { get; private set; }
-
-    public string FullName => $"{Zone}-{Aisle}-{Section}-{Bin}";
 
     private WarehouseLocation() { }
 
     public static WarehouseLocation Create(
         Guid warehouseId,
-        string zone,
-        string aisle,
-        string section,
-        string bin)
+        string code,
+        string name,
+        decimal? capacity = null)
     {
-        if (string.IsNullOrWhiteSpace(zone))
-            throw new ArgumentException("Zone is required.", nameof(zone));
-        if (string.IsNullOrWhiteSpace(aisle))
-            throw new ArgumentException("Aisle is required.", nameof(aisle));
-        if (string.IsNullOrWhiteSpace(section))
-            throw new ArgumentException("Section is required.", nameof(section));
-        if (string.IsNullOrWhiteSpace(bin))
-            throw new ArgumentException("Bin is required.", nameof(bin));
+        if (string.IsNullOrWhiteSpace(code))
+            throw new ArgumentException("Konum kodu zorunludur.", nameof(code));
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Konum adı zorunludur.", nameof(name));
+        if (code.Length > 20)
+            throw new ArgumentException("Konum kodu en fazla 20 karakter olabilir.", nameof(code));
+        if (capacity.HasValue && capacity.Value < 0)
+            throw new ArgumentException("Kapasite negatif olamaz.", nameof(capacity));
 
         return new WarehouseLocation
         {
             Id = Guid.NewGuid(),
             WarehouseId = warehouseId,
-            Zone = zone.Trim().ToUpperInvariant(),
-            Aisle = aisle.Trim().ToUpperInvariant(),
-            Section = section.Trim().ToUpperInvariant(),
-            Bin = bin.Trim().ToUpperInvariant(),
+            Code = code.Trim().ToUpperInvariant(),
+            Name = name.Trim(),
+            Capacity = capacity,
             IsActive = true
         };
     }
 
     public void Activate() => IsActive = true;
-
     public void Deactivate() => IsActive = false;
 }

@@ -1,59 +1,63 @@
+using WMS.Shared.Exceptions;
+
 namespace WMS.Domain.Warehousing;
 
 public class Warehouse
 {
-    public Guid Id { get; private set; }
-    public string Code { get; private set; } = string.Empty;
-    public string Name { get; private set; } = string.Empty;
-    public Guid TenantId { get; private set; }
-    public string? Address { get; private set; }
-    public bool IsActive { get; private set; }
-    public DateTime CreatedAt { get; private set; }
+    public Guid Id { get; protected set; }
+    public string Code { get; protected set; } = string.Empty;
+    public string Name { get; protected set; } = string.Empty;
+    public WarehouseType Type { get; protected set; }
+    public WarehouseStatus Status { get; protected set; }
+    public string? Address { get; protected set; }
+    public Guid? ParentWarehouseId { get; protected set; }
+    public DateTime CreatedAt { get; protected set; }
 
     private readonly List<WarehouseLocation> _locations = [];
     public IReadOnlyCollection<WarehouseLocation> Locations => _locations.AsReadOnly();
 
-    private Warehouse() { }
+    protected Warehouse() { }
 
     public static Warehouse Create(
         Guid id,
         string code,
         string name,
-        Guid tenantId,
-        string? address = null)
+        WarehouseType type,
+        string? address = null,
+        Guid? parentWarehouseId = null)
     {
+        if (type == WarehouseType.Machine)
+            throw new ArgumentException("Makine depoları için MachineWarehouse.Create() kullanın.", nameof(type));
         if (string.IsNullOrWhiteSpace(code))
-            throw new ArgumentException("Warehouse code is required.", nameof(code));
+            throw new ArgumentException("Depo kodu zorunludur.", nameof(code));
         if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Warehouse name is required.", nameof(name));
+            throw new ArgumentException("Depo adı zorunludur.", nameof(name));
         if (code.Length > 20)
-            throw new ArgumentException("Warehouse code max length is 20.", nameof(code));
+            throw new ArgumentException("Depo kodu en fazla 20 karakter olabilir.", nameof(code));
         if (name.Length > 200)
-            throw new ArgumentException("Warehouse name max length is 200.", nameof(name));
+            throw new ArgumentException("Depo adı en fazla 200 karakter olabilir.", nameof(name));
 
         return new Warehouse
         {
             Id = id,
             Code = code.Trim().ToUpperInvariant(),
             Name = name.Trim(),
-            TenantId = tenantId,
+            Type = type,
+            Status = WarehouseStatus.Active,
             Address = address?.Trim(),
-            IsActive = true,
+            ParentWarehouseId = parentWarehouseId,
             CreatedAt = DateTime.UtcNow
         };
     }
 
-    public WarehouseLocation CreateLocation(
-        string zone,
-        string aisle,
-        string section,
-        string bin)
+    public WarehouseLocation CreateLocation(string code, string name, decimal? capacity = null)
     {
-        if (!IsActive)
-            throw new WMS.Shared.Exceptions.BusinessException(
-                "Cannot create location in an inactive warehouse.", "WAREHOUSE_INACTIVE");
+        if (Type == WarehouseType.Machine)
+            throw new BusinessException("Makine deposuna konum eklenemez.", "MACHINE_WAREHOUSE_NO_LOCATIONS");
+        if (Status != WarehouseStatus.Active)
+            throw new BusinessException("Devre dışı depoya konum eklenemez.", "WAREHOUSE_INACTIVE");
 
-        var location = WarehouseLocation.Create(Id, zone, aisle, section, bin);
+        var location = WarehouseLocation.Create(Id, code, name, capacity);
         _locations.Add(location);
         return location;
     }
@@ -61,20 +65,21 @@ public class Warehouse
     public void Update(string name, string? address = null)
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Warehouse name is required.", nameof(name));
+            throw new ArgumentException("Depo adı zorunludur.", nameof(name));
         if (name.Length > 200)
-            throw new ArgumentException("Warehouse name max length is 200.", nameof(name));
+            throw new ArgumentException("Depo adı en fazla 200 karakter olabilir.", nameof(name));
 
         Name = name.Trim();
         Address = address?.Trim();
     }
 
+    public void Activate() => Status = WarehouseStatus.Active;
+
     public void Deactivate()
     {
-        if (!_locations.Any())
-            throw new WMS.Shared.Exceptions.BusinessException(
-                "Warehouse must have no locations to deactivate.", "WAREHOUSE_HAS_LOCATIONS");
-
-        IsActive = false;
+        if (_locations.Any(l => l.IsActive))
+            throw new BusinessException(
+                "Aktif konumları olan depo devre dışı bırakılamaz.", "WAREHOUSE_HAS_ACTIVE_LOCATIONS");
+        Status = WarehouseStatus.Inactive;
     }
 }

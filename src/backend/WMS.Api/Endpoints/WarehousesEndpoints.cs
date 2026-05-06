@@ -1,5 +1,7 @@
+using MediatR;
+using WMS.Application.Warehousing.Commands;
+using WMS.Application.Warehousing.Queries;
 using WMS.Domain.Warehousing;
-using WMS.Infrastructure.Services;
 
 namespace WMS.Api.Endpoints;
 
@@ -9,55 +11,59 @@ public static class WarehousesEndpoints
     {
         var group = app.MapGroup("/api/v1/warehouses").WithTags("Warehouses");
 
-        group.MapGet("/", async (WarehouseService service) =>
+        group.MapGet("/", async (WarehouseType? type, ISender sender) =>
         {
-            var warehouses = await service.GetAllAsync();
-            return warehouses.Select(w => new {
-                w.Id, w.Code, w.Name, w.Address,
-                w.IsActive, w.CreatedAt,
-                locations = w.Locations.Select(l => new {
-                    l.Id, l.Zone, l.Aisle, l.Section, l.Bin, l.FullName, l.IsActive
-                })
-            });
+            var result = await sender.Send(new ListWarehousesQuery(type));
+            return Results.Ok(result);
         }).WithName("ListWarehouses");
 
-        group.MapGet("/{id:guid}", async (Guid id, WarehouseService service) =>
+        group.MapGet("/{id:guid}", async (Guid id, ISender sender) =>
         {
-            var warehouse = await service.GetByIdAsync(id);
-            return warehouse is not null ? (IResult)Results.Ok(warehouse) : Results.NotFound();
+            var result = await sender.Send(new GetWarehouseQuery(id));
+            return result.IsSuccess
+                ? Results.Ok(result.Value)
+                : Results.NotFound(new { result.ErrorCode, result.Message });
         }).WithName("GetWarehouse");
 
-        group.MapPost("/", async (CreateWarehouseRequest request, WarehouseService service) =>
+        group.MapPost("/", async (CreateWarehouseRequest req, ISender sender) =>
         {
-            var warehouse = await service.CreateAsync(request.Code, request.Name, request.Address);
-            await service.SaveAsync();
-            return Results.Created($"/api/v1/warehouses/{warehouse.Id}", warehouse);
+            var result = await sender.Send(new CreateWarehouseCommand(
+                req.Code, req.Name, req.Type, req.Address, req.ParentWarehouseId, req.MachineCode));
+
+            return result.IsSuccess
+                ? Results.Created($"/api/v1/warehouses/{result.Value!.Id}", result.Value)
+                : Results.UnprocessableEntity(new { result.ErrorCode, result.Message });
         }).WithName("CreateWarehouse");
 
-        group.MapPut("/{id:guid}", async (Guid id, UpdateWarehouseRequest request, WarehouseService service) =>
+        group.MapPut("/{id:guid}", async (Guid id, UpdateWarehouseRequest req, ISender sender) =>
         {
-            try
-            {
-                var result = await service.UpdateAsync(id, request.Name, request.Address);
-                await service.SaveAsync();
-                return Results.Ok(result.Warehouse);
-            }
-            catch (InvalidOperationException)
-            {
-                return Results.NotFound();
-            }
+            var result = await sender.Send(new UpdateWarehouseCommand(id, req.Name, req.Address));
+
+            return result.IsSuccess
+                ? Results.Ok(result.Value)
+                : result.ErrorCode == "NOT_FOUND"
+                    ? Results.NotFound(new { result.ErrorCode, result.Message })
+                    : Results.UnprocessableEntity(new { result.ErrorCode, result.Message });
         }).WithName("UpdateWarehouse");
 
-        group.MapDelete("/{id:guid}", async (Guid id, WarehouseService service) =>
+        group.MapDelete("/{id:guid}", async (Guid id, ISender sender) =>
         {
-            await service.DeleteAsync(id);
-            await service.SaveAsync();
-            return Results.NoContent();
+            var result = await sender.Send(new DeleteWarehouseCommand(id));
+            return result.IsSuccess
+                ? Results.NoContent()
+                : Results.NotFound(new { result.ErrorCode, result.Message });
         }).WithName("DeleteWarehouse");
 
         return app;
     }
 
-    public record CreateWarehouseRequest(string Code, string Name, string? Address = null);
+    public record CreateWarehouseRequest(
+        string Code,
+        string Name,
+        WarehouseType Type,
+        string? Address = null,
+        Guid? ParentWarehouseId = null,
+        string? MachineCode = null);
+
     public record UpdateWarehouseRequest(string Name, string? Address = null);
 }

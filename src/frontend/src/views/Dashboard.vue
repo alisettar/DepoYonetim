@@ -25,8 +25,9 @@
             <tr>
               <th>Kod</th>
               <th>Ad</th>
+              <th>Tür</th>
               <th>Adres</th>
-              <th>Konum Sayısı</th>
+              <th>Konum</th>
               <th>Durum</th>
             </tr>
           </thead>
@@ -34,11 +35,12 @@
             <tr v-for="wh in warehouses" :key="wh.id">
               <td><strong>{{ wh.code }}</strong></td>
               <td>{{ wh.name }}</td>
+              <td>{{ typeLabel(wh.type) }}</td>
               <td>{{ wh.address || '-' }}</td>
               <td>{{ wh.locations.length }}</td>
               <td>
-                <span :class="wh.isActive ? 'status-active' : 'status-inactive'">
-                  {{ wh.isActive ? 'Aktif' : 'Pasif' }}
+                <span :class="wh.status === 'Active' ? 'status-active' : 'status-inactive'">
+                  {{ wh.status === 'Active' ? 'Aktif' : 'Pasif' }}
                 </span>
               </td>
             </tr>
@@ -55,9 +57,12 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { getWarehouses } from '../api/client'
-import type { Warehouse } from '../types'
+import type { Warehouse, WarehouseType } from '../types'
 
 const warehouses = ref<Warehouse[]>([])
+
+const typeLabel = (type: WarehouseType) =>
+  ({ Physical: 'Fiziksel', Virtual: 'Sanal', Machine: 'Makine' })[type]
 
 const fetchWarehouses = async () => {
   try {
@@ -69,7 +74,7 @@ const fetchWarehouses = async () => {
 
 const stats = computed(() => ({
   totalWarehouses: warehouses.value.length,
-  activeWarehouses: warehouses.value.filter(w => w.isActive).length,
+  activeWarehouses: warehouses.value.filter(w => w.status === 'Active').length,
   totalLocations: warehouses.value.reduce((sum, w) => sum + w.locations.length, 0)
 }))
 
@@ -103,17 +108,8 @@ onMounted(fetchWarehouses)
   margin-top: 0.25rem;
 }
 
-.section {
-  margin-top: 1.5rem;
-}
+.section { margin-top: 1.5rem; }
 
-.status-active {
-  color: #16a34a;
-  font-weight: 500;
-}
-
-.status-inactive {
-  color: #dc2626;
-  font-weight: 500;
-}
+.status-active   { color: #16a34a; font-weight: 500; }
+.status-inactive { color: #dc2626; font-weight: 500; }
 </style>
