@@ -126,6 +126,7 @@ public static class InventoryEndpoints
         string? LotNumber,
         DateTime? ProductionDate,
         DateTime? ExpiryDate,
+        Guid? RecipeId,
         Guid WarehouseId,
         Guid? LocationId,
         decimal Quantity,

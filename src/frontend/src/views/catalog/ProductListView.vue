@@ -16,6 +16,7 @@
             <th>Lot</th>
             <th>Min / Max Stok</th>
             <th>Durum</th>
+            <th>Reçete</th>
             <th>İşlemler</th>
           </tr>
         </thead>
@@ -40,6 +41,12 @@
               <span :class="p.status === 'Active' ? 'status-active' : 'status-inactive'">
                 {{ p.status === 'Active' ? 'Aktif' : 'Pasif' }}
               </span>
+            </td>
+            <td>
+              <router-link v-if="hasRecipes(p.id)" :to="`/recipes?productId=${p.id}`">
+                <strong>{{ recipeCount(p.id) }} →</strong>
+              </router-link>
+              <span v-else style="color:#9ca3af">—</span>
             </td>
             <td>
               <button class="btn btn-sm" style="background:#f59e0b;color:white" @click="showEdit(p)">Düzenle</button>
@@ -169,12 +176,13 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { getProducts, createProduct, updateProduct, deleteProduct, getUnits, getCategories } from '../../api/client'
-import type { Product, Unit, Category } from '../../types'
+import { getProducts, createProduct, updateProduct, deleteProduct, getUnits, getCategories, getRecipes } from '../../api/client'
+import type { Product, Unit, Category, RecipeSummary } from '../../types'
 
 const products = ref<Product[]>([])
 const units = ref<Unit[]>([])
 const categories = ref<Category[]>([])
+const recipes = ref<RecipeSummary[]>([])
 const showCreate = ref(false)
 const editingProduct = ref<Product | null>(null)
 
@@ -187,12 +195,15 @@ const form = ref(defaultForm())
 
 const unitName = (id: string) => units.value.find(u => u.id === id)?.name ?? id
 const categoryName = (id: string) => categories.value.find(c => c.id === id)?.name ?? id
+const hasRecipes = (productId: string) => recipes.value.some(r => r.productId === productId)
+const recipeCount = (productId: string) => recipes.value.filter(r => r.productId === productId).length
 
 const fetchAll = async () => {
   try {
     [products.value, units.value, categories.value] = await Promise.all([
       getProducts(), getUnits(), getCategories()
     ])
+    try { recipes.value = await getRecipes() } catch { /* ignore */ }
   } catch { products.value = [] }
 }
 
