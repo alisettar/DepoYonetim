@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
 using WMS.Infrastructure.Catalog;
 using WMS.Infrastructure.Catalog.Entities;
@@ -12,22 +11,13 @@ public interface ITenantConnectionResolver
     Task<string> GetConnectionStringAsync(string tenantCode, CancellationToken ct = default);
 }
 
-public class TenantConnectionResolver : ITenantConnectionResolver
+public class TenantConnectionResolver(
+    Func<CatalogDbContext> catalogContextFactory,
+    AesGcmService decryptor) : ITenantConnectionResolver
 {
-    private readonly Func<CatalogDbContext> _catalogContextFactory;
-    private readonly AesGcmService _decryptor;
-
-    public TenantConnectionResolver(
-        Func<CatalogDbContext> catalogContextFactory,
-        AesGcmService decryptor)
-    {
-        _catalogContextFactory = catalogContextFactory;
-        _decryptor = decryptor;
-    }
-
     public async Task<string?> GetConnectionStringAsync(Guid tenantId, CancellationToken ct = default)
     {
-        using var context = _catalogContextFactory();
+        using var context = catalogContextFactory();
         var db = await context.TenantDatabases
             .Include(t => t.Tenant)
             .FirstOrDefaultAsync(t => t.TenantId == tenantId, ct);
@@ -40,7 +30,7 @@ public class TenantConnectionResolver : ITenantConnectionResolver
 
     public async Task<string> GetConnectionStringAsync(string tenantCode, CancellationToken ct = default)
     {
-        using var context = _catalogContextFactory();
+        using var context = catalogContextFactory();
         var tenant = await context.Tenants
             .Include(t => t.TenantDatabases)
             .FirstOrDefaultAsync(t => t.Code == tenantCode, ct);
@@ -54,7 +44,7 @@ public class TenantConnectionResolver : ITenantConnectionResolver
 
     private string BuildConnectionString(TenantDatabase db)
     {
-        var password = _decryptor.Decrypt(Convert.ToHexString(db.PasswordEnc));
+        var password = decryptor.Decrypt(Convert.ToHexString(db.PasswordEnc));
         return $"Host={db.Host};Port={db.Port};Database={db.DatabaseName};Username={db.Username};Password={password};";
     }
 }

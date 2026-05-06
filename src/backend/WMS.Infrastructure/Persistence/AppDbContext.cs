@@ -3,31 +3,21 @@ using WMS.Shared.Common;
 
 namespace WMS.Infrastructure.Persistence;
 
-public class AppDbContext : DbContext
+public class AppDbContext(
+    DbContextOptions<AppDbContext> options,
+    ITenantContext tenantContext,
+    string tenantConnectionString) : DbContext(options)
 {
-    private readonly ITenantContext _tenantContext;
-    private readonly string _tenantConnectionString;
-
-    public AppDbContext(
-        DbContextOptions<AppDbContext> options,
-        ITenantContext tenantContext,
-        string tenantConnectionString)
-        : base(options)
-    {
-        _tenantContext = tenantContext;
-        _tenantConnectionString = tenantConnectionString;
-    }
-
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         if (!optionsBuilder.IsConfigured)
-            optionsBuilder.UseNpgsql(_tenantConnectionString);
+            optionsBuilder.UseNpgsql(tenantConnectionString);
 
         base.OnConfiguring(optionsBuilder);
     }
 
-    public Guid TenantId => _tenantContext.TenantId;
-    public Guid UserId => _tenantContext.UserId;
+    public Guid TenantId => tenantContext.TenantId;
+    public Guid UserId => tenantContext.UserId;
 
     // Placeholder for tenant-specific entity sets — populated in M2
     // DbSet<Product> Products => Set<Product>();

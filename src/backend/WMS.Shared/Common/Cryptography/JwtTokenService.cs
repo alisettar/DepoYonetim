@@ -7,18 +7,10 @@ namespace WMS.Shared.Common.Cryptography;
 
 public record TokenResult(string AccessToken, string RefreshToken, DateTime ExpiresAt);
 
-public class JwtTokenService
+public class JwtTokenService(string privateKeyPath, string publicKeyPath, string issuer)
 {
-    private readonly string _privateKeyPem;
-    private readonly string _publicKeyPem;
-    private readonly string _issuer;
-
-    public JwtTokenService(string privateKeyPath, string publicKeyPath, string issuer)
-    {
-        _issuer = issuer;
-        _privateKeyPem = File.ReadAllText(privateKeyPath);
-        _publicKeyPem = File.ReadAllText(publicKeyPath);
-    }
+    private readonly string _privateKeyPem = File.ReadAllText(privateKeyPath);
+    private readonly string _publicKeyPem = File.ReadAllText(publicKeyPath);
 
     public TokenResult GenerateToken(
         Guid userId,
@@ -40,7 +32,7 @@ public class JwtTokenService
             new("tenant_id", tenantId.ToString()),
             new("tenant_code", tenantCode),
             new("actor_type", actorType),
-            new(JwtRegisteredClaimNames.Iss, _issuer),
+            new(JwtRegisteredClaimNames.Iss, issuer),
             new(JwtRegisteredClaimNames.Iat, new DateTimeOffset(now).ToUnixTimeSeconds().ToString()),
             new(JwtRegisteredClaimNames.Nbf, new DateTimeOffset(now).ToUnixTimeSeconds().ToString()),
             new(JwtRegisteredClaimNames.Exp, new DateTimeOffset(expiration).ToUnixTimeSeconds().ToString()),
@@ -53,7 +45,7 @@ public class JwtTokenService
         var credentials = new SigningCredentials(key, SecurityAlgorithms.RsaSha256);
 
         var token = new JwtSecurityToken(
-            issuer: _issuer,
+            issuer: issuer,
             claims: claims,
             notBefore: now,
             expires: expiration,
@@ -73,7 +65,7 @@ public class JwtTokenService
         var validation = new TokenValidationParameters
         {
             ValidateIssuer = true,
-            ValidIssuer = _issuer,
+            ValidIssuer = issuer,
             ValidateAudience = false,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,

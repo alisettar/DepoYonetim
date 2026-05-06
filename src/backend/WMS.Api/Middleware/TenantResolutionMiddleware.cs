@@ -1,21 +1,11 @@
 using System.Security.Claims;
-using Microsoft.IdentityModel.Tokens;
 using WMS.Infrastructure.Services;
 using WMS.Shared.Common;
 
 namespace WMS.Api.Middleware;
 
-public class TenantResolutionMiddleware
+public class TenantResolutionMiddleware(RequestDelegate next, ILogger<TenantResolutionMiddleware> logger)
 {
-    private readonly RequestDelegate _next;
-    private readonly ILogger<TenantResolutionMiddleware> _logger;
-
-    public TenantResolutionMiddleware(RequestDelegate next, ILogger<TenantResolutionMiddleware> logger)
-    {
-        _next = next;
-        _logger = logger;
-    }
-
     public async Task InvokeAsync(HttpContext context, ICachedTenantConnectionFactory connFactory)
     {
         // Skip for auth endpoints and health checks
@@ -25,7 +15,7 @@ public class TenantResolutionMiddleware
             path.StartsWith("/swagger") ||
             path.StartsWith("/favicon"))
         {
-            await _next(context);
+            await next(context);
             return;
         }
 
@@ -66,11 +56,11 @@ public class TenantResolutionMiddleware
             var tenantContext = TenantContext.FromClaims(tenantId, tenantCode, userId, email, actorType);
             context.Items["TenantContext"] = tenantContext;
 
-            await _next(context);
+            await next(context);
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Tenant resolution failed");
+            logger.LogWarning(ex, "Tenant resolution failed");
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             await context.Response.WriteAsJsonAsync(new { message = "Token validation failed." });
         }

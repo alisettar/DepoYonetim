@@ -1,4 +1,12 @@
+using System.Threading.Tasks;
+
 namespace WMS.Shared.Result;
+
+public static class ResultExtensions
+{
+    public static System.Threading.Tasks.Task<Result> ToTask(this Result result) => System.Threading.Tasks.Task.FromResult(result);
+    public static System.Threading.Tasks.Task<Result<T>> ToTask<T>(this Result<T> result) => System.Threading.Tasks.Task.FromResult(result);
+}
 
 public class Result<T> : Result
 {
