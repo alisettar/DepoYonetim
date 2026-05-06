@@ -4,16 +4,17 @@ using WMS.Shared.Common;
 
 namespace WMS.Api.Middleware;
 
-public class TenantResolutionMiddleware(RequestDelegate next, ILogger<TenantResolutionMiddleware> logger)
+public class TenantResolutionMiddleware(
+    RequestDelegate next,
+    ILogger<TenantResolutionMiddleware> logger,
+    IConfiguration configuration)
 {
+    private static readonly string[] SkippedPaths = ["/health", "/api/v1/auth", "/swagger", "/favicon"];
+
     public async Task InvokeAsync(HttpContext context, ICachedTenantConnectionFactory connFactory)
     {
-        // Skip for auth endpoints and health checks
         var path = context.Request.Path.Value ?? "";
-        if (path.StartsWith("/health") ||
-            path.StartsWith("/api/v1/auth") ||
-            path.StartsWith("/swagger") ||
-            path.StartsWith("/favicon"))
+        if (SkippedPaths.Any(path.StartsWith))
         {
             await next(context);
             return;
@@ -22,19 +23,38 @@ public class TenantResolutionMiddleware(RequestDelegate next, ILogger<TenantReso
         var authHeader = context.Request.Headers.Authorization.ToString();
         if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
         {
-            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-            await context.Response.WriteAsJsonAsync(new { message = "Missing or invalid authorization header." });
+            // Auth devre dışı: varsayılan tenant kullan
+            var defaultTenantId = configuration["DefaultTenantId"];
+            if (defaultTenantId is null)
+            {
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                await context.Response.WriteAsJsonAsync(new { message = "Kimlik doğrulama gerekli." });
+                return;
+            }
+
+            var tenantId = Guid.Parse(defaultTenantId);
+            var connStr = connFactory.GetConnectionString(tenantId);
+            if (connStr is null)
+            {
+                context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+                await context.Response.WriteAsJsonAsync(new { message = "Varsayılan tenant bağlantısı kurulamadı." });
+                return;
+            }
+
+            context.Items["TenantContext"] = TenantContext.FromClaims(
+                tenantId, "dev", Guid.Empty, "dev@localhost", "tenant_user");
+            await next(context);
             return;
         }
 
-        var token = authHeader.Substring("Bearer ".Length).Trim();
+        var token = authHeader["Bearer ".Length..].Trim();
         try
         {
             var principal = ValidateJwtToken(token);
             if (principal is null)
             {
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                await context.Response.WriteAsJsonAsync(new { message = "Invalid token." });
+                await context.Response.WriteAsJsonAsync(new { message = "Geçersiz token." });
                 return;
             }
 
@@ -44,34 +64,30 @@ public class TenantResolutionMiddleware(RequestDelegate next, ILogger<TenantReso
             var email = principal.FindFirst(ClaimTypes.Email)?.Value ?? "";
             var actorType = principal.FindFirst("actor_type")?.Value ?? "tenant_user";
 
-            // Check tenant status
             var connStr = connFactory.GetConnectionString(tenantId);
             if (connStr is null)
             {
                 context.Response.StatusCode = StatusCodes.Status402PaymentRequired;
-                await context.Response.WriteAsJsonAsync(new { message = "Tenant is not active." });
+                await context.Response.WriteAsJsonAsync(new { message = "Tenant aktif değil." });
                 return;
             }
 
-            var tenantContext = TenantContext.FromClaims(tenantId, tenantCode, userId, email, actorType);
-            context.Items["TenantContext"] = tenantContext;
-
+            context.Items["TenantContext"] = TenantContext.FromClaims(tenantId, tenantCode, userId, email, actorType);
             await next(context);
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "Tenant resolution failed");
+            logger.LogWarning(ex, "Tenant çözümleme başarısız");
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-            await context.Response.WriteAsJsonAsync(new { message = "Token validation failed." });
+            await context.Response.WriteAsJsonAsync(new { message = "Token doğrulama başarısız." });
         }
     }
 
     private static ClaimsPrincipal? ValidateJwtToken(string token)
     {
-        // Placeholder — will be replaced with real JWT validation using JwtTokenService
+        // Gerçek JWT doğrulama auth etkinleştirildiğinde JwtTokenService ile yapılacak
         try
         {
-            // Basic structure validation only for now
             var parts = token.Split('.');
             if (parts.Length != 3) return null;
             return new ClaimsPrincipal();
@@ -86,8 +102,5 @@ public class TenantResolutionMiddleware(RequestDelegate next, ILogger<TenantReso
 public static class TenantResolutionMiddlewareExtensions
 {
     public static IApplicationBuilder UseTenantResolution(this IApplicationBuilder app)
-    {
-        return app.UseMiddleware<TenantResolutionMiddleware>();
-    }
+        => app.UseMiddleware<TenantResolutionMiddleware>();
 }
-
